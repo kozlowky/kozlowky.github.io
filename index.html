@@ -1,23 +1,139 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="ru">
 <head>
-    <title>Быстрый старт. Размещение интерактивной карты на странице</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <script src="https://api-maps.yandex.ru/2.1/?apikey=98d71c59-85f2-4aa9-b291-db2b229ba3bc&lang=ru_RU" type="text/javascript">
-    </script>
-    <script type="text/javascript">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор города</title>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=98d71c59-85f2-4aa9-b291-db2b229ba3bc&lang=ru_RU" type="text/javascript"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        #map {
+            flex: 1;
+            width: 100%;
+        }
+        #form {
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #ddd;
+        }
+        .form-item {
+            margin-bottom: 10px;
+        }
+        .form-item label {
+            font-weight: bold;
+        }
+        .form-item input {
+            width: calc(100% - 20px);
+            padding: 5px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        #done-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+    <script>
         ymaps.ready(init);
-        function init(){
-            var myMap = new ymaps.Map("map", {
-                center: [55.76, 37.64],
-                zoom: 7
+
+        function init() {
+            const tg = window.Telegram.WebApp; // Telegram WebApp объект
+
+            const myMap = new ymaps.Map("map", {
+                center: [55.76, 37.64], // Москва по умолчанию
+                zoom: 5
             });
+
+            const searchControl = new ymaps.control.SearchControl({
+                options: {
+                    float: 'right',
+                    provider: 'yandex#map',
+                    size: 'large'
+                }
+            });
+
+            myMap.controls.add(searchControl);
+
+            const cities = {
+                from: null,
+                to: null
+            };
+
+            let placemark;
+
+            // Добавляем событие клика на карту
+            myMap.events.add('click', function (e) {
+                const coords = e.get('coords');
+
+                if (!cities.from) {
+                    cities.from = coords;
+                    document.getElementById('from-city').value = `Широта: ${coords[0].toFixed(4)}, Долгота: ${coords[1].toFixed(4)}`;
+                    addPlacemark(coords, 'Город отправки');
+                } else if (!cities.to) {
+                    cities.to = coords;
+                    document.getElementById('to-city').value = `Широта: ${coords[0].toFixed(4)}, Долгота: ${coords[1].toFixed(4)}`;
+                    addPlacemark(coords, 'Город прибытия');
+                }
+            });
+
+            // Функция для добавления метки
+            function addPlacemark(coords, hint) {
+                if (placemark) {
+                    placemark.geometry.setCoordinates(coords);
+                } else {
+                    placemark = new ymaps.Placemark(coords, {
+                        hintContent: hint
+                    });
+                    myMap.geoObjects.add(placemark);
+                }
+            }
+
+            // Обработка кнопки "ГОТОВО"
+            document.getElementById('done-button').addEventListener('click', function () {
+                if (cities.from && cities.to) {
+                    const data = {
+                        from: cities.from,
+                        to: cities.to
+                    };
+                    tg.sendData(JSON.stringify(data)); // Отправка данных боту
+                    tg.close(); // Закрыть WebApp
+                } else {
+                    alert('Укажите оба города!');
+                }
+            });
+
+            // Инициализация кнопки Telegram
+            tg.expand();
         }
     </script>
 </head>
-
 <body>
-    <div id="map" style="width: 600px; height: 400px"></div>
+    <div id="map"></div>
+    <div id="form">
+        <div class="form-item">
+            <label for="from-city">Город отправки:</label>
+            <input type="text" id="from-city" readonly>
+        </div>
+        <div class="form-item">
+            <label for="to-city">Город прибытия:</label>
+            <input type="text" id="to-city" readonly>
+        </div>
+        <button id="done-button">ГОТОВО</button>
+    </div>
 </body>
-
 </html>
