@@ -1,143 +1,114 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Выбор города</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script> <!-- Подключение Telegram WebApp -->
-    <script src="https://api-maps.yandex.ru/2.1/?apikey=98d71c59-85f2-4aa9-b291-db2b229ba3bc&lang=ru_RU" type="text/javascript"></script>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-        }
-        #map {
-            width: 100%;
-            height: 80%;
-        }
-        #form-container {
-            height: 20%;
-            padding: 10px;
-            box-sizing: border-box;
-            background-color: #f4f4f9;
-        }
-        #form-container input {
-            width: calc(50% - 10px);
-            padding: 10px;
-            margin: 5px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        #done-button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            font-size: 18px;
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        #done-button:disabled {
-            background-color: #aaa;
-            cursor: not-allowed;
-        }
-    </style>
-    <script>
-        ymaps.ready(init);
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Test Telegram WebApps API</title>
+   <script src="https://telegram.org/js/telegram-web-app.js"></script> <!--Подключаем скрипт от телеграм-->
 
-        function init() {
-            const tg = window.Telegram.WebApp; // Инициализация WebApp
+   <style>
+      body{
+         color: var(--tg-theme-text-color);
+         background: var(--tg-theme-bg-color);
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         font-size: 18px;
+      }
 
-            if (!tg) {
-                alert("WebApp должен быть запущен через Telegram!");
-                return;
-            }
+      .hint{
+         color: var(--tg-theme-hint-color);
+      }
 
-            // Разворачиваем WebApp
-            tg.expand();
+      .link{
+         color: var(--tg-theme-link-color);
+      }
 
-            // Инициализация карты
-            const myMap = new ymaps.Map("map", {
-                center: [55.76, 37.64], // Москва по умолчанию
-                zoom: 5
-            });
+      .button{
+         background: var(--tg-theme-button-color);
+         color: var(--tg-theme-button-text-color);
+         border: none;
+         font-size: 18px;
+      }
 
-            const searchControl = new ymaps.control.SearchControl({
-                options: {
-                    float: 'right',
-                    provider: 'yandex#map',
-                    size: 'large'
-                }
-            });
-            myMap.controls.add(searchControl);
+      .button:not(:last-child){
+         margin-bottom: 20px
+      }
 
-            let fromCity = null;
-            let toCity = null;
-
-            // Отображение города отправки и прибытия
-            const fromCityInput = document.getElementById('from-city');
-            const toCityInput = document.getElementById('to-city');
-            const doneButton = document.getElementById('done-button');
-
-            doneButton.disabled = true;
-
-            // Обработчик выбора города
-            searchControl.events.add('resultselect', (e) => {
-                const index = e.get('index');
-                searchControl.getResult(index).then((res) => {
-                    const coords = res.geometry.getCoordinates();
-                    const name = res.properties.get('name');
-
-                    if (!fromCity) {
-                        fromCity = { coords, name };
-                        fromCityInput.value = name;
-                    } else if (!toCity) {
-                        toCity = { coords, name };
-                        toCityInput.value = name;
-                        doneButton.disabled = false; // Активируем кнопку, когда оба города выбраны
-                    }
-                });
-            });
-
-            // Обработчик клика на кнопку "ГОТОВО"
-            doneButton.addEventListener('click', () => {
-                if (fromCity && toCity) {
-                    const payload = JSON.stringify({ from: fromCity, to: toCity });
-                    console.log("Отправка данных:", payload);
-
-                    // Отправка данных через Telegram WebApp API
-                    tg.sendData(payload); 
-                    tg.close(); // Закрыть WebApp после отправки данных
-                } else {
-                    alert("Пожалуйста, выберите оба города.");
-                }
-            });
-
-            // Слушаем событие основного действия кнопки Telegram
-            tg.onEvent('mainButtonClicked', function() {
-                if (fromCity && toCity) {
-                    const payload = JSON.stringify({ from: fromCity, to: toCity });
-                    console.log("Отправка данных через mainButtonClicked:", payload);
-                    tg.sendData(payload);  // Отправляем данные
-                    tg.close();  // Закрытие WebApp
-                } else {
-                    alert("Пожалуйста, выберите оба города.");
-                }
-            });
-        }
-    </script>
+      #usercard{
+         text-align: center;
+      }
+   </style>
 </head>
+
 <body>
-    <div id="map"></div>
-    <div id="form-container">
-        <input id="from-city" placeholder="Город отправки" readonly />
-        <input id="to-city" placeholder="Город прибытия" readonly />
-        <button id="done-button">ГОТОВО</button>
-    </div>
+   <div id="usercard"> <!--Карта профиля, человека, который к нам обратился-->
+   </div>
+   <p>Just text</p> <!--Просто текст для проверки-->
+   <a class="link" href="https://mihailgok.ru">Link</a> <!--Просто ссылка для проверки-->
+   <p class="hint">Some little hint</p> <!--Просто текст-подсказка для проверки-->
+   <button id="btn" class="button">Show/Hide Main Button</button> <!--Кнопка, чтобы скрыть / показать основную кнопку-->
+   <button id="btnED" class="button">Enable/Disable Main Button</button> <!--Кнопка, чтобы сделать кнопку активной/неактивной-->
 </body>
+
+<script>
+   let tg = window.Telegram.WebApp; //получаем объект webapp телеграма 
+
+   tg.expand(); //расширяем на все окно  
+
+   tg.MainButton.text = "Changed Text"; //изменяем текст кнопки 
+   tg.MainButton.setText("Changed Text1"); //изменяем текст кнопки иначе
+   tg.MainButton.textColor = "#F55353"; //изменяем цвет текста кнопки
+   tg.MainButton.color = "#143F6B"; //изменяем цвет бэкграунда кнопки
+   tg.MainButton.setParams({"color": "#143F6B"}); //так изменяются все параметры
+
+   let btn = document.getElementById("btn"); //получаем кнопку скрыть/показать 
+
+   btn.addEventListener('click', function(){ //вешаем событие на нажатие html-кнопки
+      if (tg.MainButton.isVisible){ //если кнопка показана 
+         tg.MainButton.hide() //скрываем кнопку 
+      }
+      else{ //иначе
+         tg.MainButton.show() //показываем 
+      }
+   });
+
+   let btnED = document.getElementById("btnED"); //получаем кнопку активировать/деактивировать
+   btnED.addEventListener('click', function(){ //вешаем событие на нажатие html-кнопки
+      if (tg.MainButton.isActive){ //если кнопка показана 
+         tg.MainButton.setParams({"color": "#E0FFFF"}); //меняем цвет
+         tg.MainButton.disable() //скрываем кнопку 
+      }
+      else{ //иначе
+         tg.MainButton.setParams({"color": "#143F6B"}); //меняем цвет
+         tg.MainButton.enable() //показываем 
+      }
+   });
+
+   Telegram.WebApp.onEvent('mainButtonClicked', function(){
+      tg.sendData("some string that we need to send"); 
+      //при клике на основную кнопку отправляем данные в строковом виде
+   });
+
+
+   let usercard = document.getElementById("usercard"); //получаем блок usercard 
+
+   let profName = document.createElement('p'); //создаем параграф
+   profName.innerText = `${tg.initDataUnsafe.user.first_name}
+   ${tg.initDataUnsafe.user.last_name}
+   ${tg.initDataUnsafe.user.username} (${tg.initDataUnsafe.user.language_code})`;
+   //выдем имя, "фамилию", через тире username и код языка
+   usercard.appendChild(profName); //добавляем 
+
+   let userid = document.createElement('p'); //создаем еще параграф 
+   userid.innerText = `${tg.initDataUnsafe.user.id}`; //показываем user_id
+   usercard.appendChild(userid); //добавляем
+
+
+   //работает только в attachment menu
+   // let pic = document.createElement('img'); //создаем img
+   // pic.src = tg.initDataUnsafe.user.photo_url; //задаём src 
+   // usercard.appendChild(pic); //добавляем элемент в карточку 
+</script>
 </html>
