@@ -51,7 +51,7 @@
         ymaps.ready(init);
 
         function init() {
-            const tg = window.Telegram?.WebApp;
+            const tg = window.Telegram.WebApp; // Инициализация WebApp
 
             if (!tg) {
                 alert("WebApp должен быть запущен через Telegram!");
@@ -86,6 +86,7 @@
 
             doneButton.disabled = true;
 
+            // Обработчик выбора города
             searchControl.events.add('resultselect', (e) => {
                 const index = e.get('index');
                 searchControl.getResult(index).then((res) => {
@@ -103,12 +104,27 @@
                 });
             });
 
+            // Обработчик клика на кнопку "ГОТОВО"
             doneButton.addEventListener('click', () => {
                 if (fromCity && toCity) {
                     const payload = JSON.stringify({ from: fromCity, to: toCity });
                     console.log("Отправка данных:", payload);
-                    tg.sendData(payload);
-                    tg.close();
+
+                    // Отправка данных через Telegram WebApp API
+                    tg.sendData(payload); 
+                    tg.close(); // Закрыть WebApp после отправки данных
+                } else {
+                    alert("Пожалуйста, выберите оба города.");
+                }
+            });
+
+            // Слушаем событие основного действия кнопки Telegram
+            tg.onEvent('mainButtonClicked', function() {
+                if (fromCity && toCity) {
+                    const payload = JSON.stringify({ from: fromCity, to: toCity });
+                    console.log("Отправка данных через mainButtonClicked:", payload);
+                    tg.sendData(payload);  // Отправляем данные
+                    tg.close();  // Закрытие WebApp
                 } else {
                     alert("Пожалуйста, выберите оба города.");
                 }
