@@ -37,7 +37,26 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
 
-        .form-container input,
+        .form-container input {
+            width: 100%;
+            margin-bottom: 10px;
+            padding-right: 30px; /* Добавляем место для крестика */
+        }
+
+        .form-container input::placeholder {
+            color: #aaa;
+        }
+
+        .form-container .clear-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #aaa;
+            font-size: 18px;
+        }
+
         .form-container button {
             width: 100%;
             margin-bottom: 10px;
@@ -49,10 +68,15 @@
     <div id="map" class="map-container"></div> <!-- Место для карты Яндекса -->
     
     <div id="form-container" class="form-container">
-        <input id="from-city" class="form-control" placeholder="Город отправки" readonly />
-        <input id="to-city" class="form-control" placeholder="Город доставки" readonly />
+        <div class="position-relative">
+            <input id="from-city" class="form-control" placeholder="Город отправки" readonly />
+            <span class="clear-btn" id="clear-from-city">&#10006;</span> <!-- Крестик для сброса -->
+        </div>
+        <div class="position-relative">
+            <input id="to-city" class="form-control" placeholder="Город доставки" readonly />
+            <span class="clear-btn" id="clear-to-city">&#10006;</span> <!-- Крестик для сброса -->
+        </div>
         <button id="done-button" class="btn btn-primary" disabled>Отправить</button>
-        <button id="reset-button" class="btn btn-secondary">Сбросить</button>
     </div>
 
     <script>
@@ -125,12 +149,15 @@
             }
         });
 
-        // Добавляем обработчик для кнопки сброса
-        document.getElementById('reset-button').addEventListener('click', () => {
-            // Сбрасываем значения
+        // Добавляем обработчики для крестиков (сброс значений в полях)
+        document.getElementById('clear-from-city').addEventListener('click', () => {
             fromCity = null;
-            toCity = null;
             document.getElementById('from-city').value = '';
+            document.getElementById('done-button').disabled = true;
+        });
+
+        document.getElementById('clear-to-city').addEventListener('click', () => {
+            toCity = null;
             document.getElementById('to-city').value = '';
             document.getElementById('done-button').disabled = true;
         });
