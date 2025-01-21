@@ -1,45 +1,23 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Выбор города</title>
-    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
-    <script>
-        // Telegram WebApp объект
-        const tg = window.Telegram.WebApp;
-
-        ymaps.ready(function () {
-            const map = new ymaps.Map("map", {
+    <title>Быстрый старт. Размещение интерактивной карты на странице</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=98d71c59-85f2-4aa9-b291-db2b229ba3bc&lang=ru_RU" type="text/javascript">
+    </script>
+    <script type="text/javascript">
+        ymaps.ready(init);
+        function init(){
+            var myMap = new ymaps.Map("map", {
                 center: [55.76, 37.64],
-                zoom: 5
+                zoom: 7
             });
-
-            let placemark;
-
-            map.events.add('click', function (e) {
-                const coords = e.get('coords');
-
-                if (placemark) {
-                    placemark.geometry.setCoordinates(coords);
-                } else {
-                    placemark = new ymaps.Placemark(coords, {
-                        hintContent: 'Выбранное место'
-                    });
-                    map.geoObjects.add(placemark);
-                }
-
-                tg.MainButton.text = "Подтвердить выбор";
-                tg.MainButton.show();
-
-                tg.onEvent('mainButtonClicked', function () {
-                    tg.sendData(JSON.stringify({ city_coords: coords }));
-                });
-            });
-        });
+        }
     </script>
 </head>
+
 <body>
-    <div id="map" style="width: 100%; height: 100vh;"></div>
+    <div id="map" style="width: 600px; height: 400px"></div>
 </body>
+
 </html>
