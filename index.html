@@ -138,12 +138,15 @@
             // Обработчик клика по карте для выбора города
             myMap.events.add('click', function (e) {
                 const coords = e.get('coords');
-                const name = 'Неизвестный город';  // Место, которое будет выбрано
                 const geoCoder = ymaps.geocode(coords);
                 geoCoder.then((res) => {
                     const firstGeoObject = res.geoObjects.get(0);
+                    let name = 'Неизвестный город'; // Значение по умолчанию
                     if (firstGeoObject) {
-                        name = firstGeoObject.getAddressLine();
+                        // Получаем только города или административные области
+                        const locality = firstGeoObject.getLocalities();
+                        const administrativeArea = firstGeoObject.getAdministrativeAreas();
+                        name = locality.length ? locality.join(', ') : administrativeArea.join(', ');
                     }
 
                     if (!fromCity) {
