@@ -105,13 +105,15 @@
 
             doneButton.addEventListener('click', () => {
                 if (fromCity && toCity) {
-                    tg.sendData(JSON.stringify({ from: fromCity, to: toCity }));
+                    const payload = JSON.stringify({ from: fromCity, to: toCity });
+                    console.log("Отправка данных:", payload);
+                    tg.sendData(payload);
                     tg.close();
                 } else {
                     alert("Пожалуйста, выберите оба города.");
                 }
             });
-        }
+
     </script>
 </head>
 <body>
