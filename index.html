@@ -85,6 +85,8 @@
 
         let fromCity = null; // Для хранения города отправки
         let toCity = null; // Для хранения города доставки
+        let fromMarker = null; // Маркер для города отправки
+        let toMarker = null; // Маркер для города доставки
 
         // Инициализация карты
         ymaps.ready(init);
@@ -116,12 +118,21 @@
                     const coords = res.geometry.getCoordinates();
                     const name = res.properties.get('name');
 
+                    // Добавляем маркер на выбранное место
                     if (!fromCity) {
                         fromCity = { coords, name };
                         document.getElementById('from-city').value = name;
+                        fromMarker = new ymaps.Placemark(coords, {
+                            balloonContent: name
+                        });
+                        myMap.geoObjects.add(fromMarker);
                     } else if (!toCity) {
                         toCity = { coords, name };
                         document.getElementById('to-city').value = name;
+                        toMarker = new ymaps.Placemark(coords, {
+                            balloonContent: name
+                        });
+                        myMap.geoObjects.add(toMarker);
                     }
 
                     // Если оба города выбраны, активируем кнопку
@@ -145,13 +156,21 @@
                         name = locality.length ? locality.join(', ') : administrativeArea.join(', ');
                     }
 
-                    // Добавляем полученное название города в форму
+                    // Добавляем маркер на выбранное место
                     if (!fromCity) {
                         fromCity = { coords, name };
                         document.getElementById('from-city').value = name;
+                        fromMarker = new ymaps.Placemark(coords, {
+                            balloonContent: name
+                        });
+                        myMap.geoObjects.add(fromMarker);
                     } else if (!toCity) {
                         toCity = { coords, name };
                         document.getElementById('to-city').value = name;
+                        toMarker = new ymaps.Placemark(coords, {
+                            balloonContent: name
+                        });
+                        myMap.geoObjects.add(toMarker);
                     }
 
                     // Если оба города выбраны, активируем кнопку
@@ -188,12 +207,20 @@
         document.getElementById('clear-from-city').addEventListener('click', () => {
             fromCity = null;
             document.getElementById('from-city').value = '';
+            if (fromMarker) {
+                fromMarker.geometry.setCoordinates([0, 0]); // Удаляем маркер
+                fromMarker = null;
+            }
             document.getElementById('done-button').disabled = true;
         });
 
         document.getElementById('clear-to-city').addEventListener('click', () => {
             toCity = null;
             document.getElementById('to-city').value = '';
+            if (toMarker) {
+                toMarker.geometry.setCoordinates([0, 0]); // Удаляем маркер
+                toMarker = null;
+            }
             document.getElementById('done-button').disabled = true;
         });
     </script>
