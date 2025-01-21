@@ -95,21 +95,53 @@
                 zoom: 5
             });
 
+            // Удаление слоев (Пробки, Слои)
+            myMap.controls.remove('trafficControl');  // Убираем пробки
+            myMap.controls.remove('layerSwitcher');   // Убираем слои
+
+            // Центрирование поиска по текущему положению карты
             const searchControl = new ymaps.control.SearchControl({
                 options: {
                     float: 'right',
                     provider: 'yandex#map',
-                    size: 'large'
+                    size: 'large',
+                    useMapBounds: true // Используем текущие границы карты для поиска
                 }
             });
             myMap.controls.add(searchControl);
 
-            // Обработчик выбора города на карте
+            // Обработчик выбора города на карте через поиск
             searchControl.events.add('resultselect', (e) => {
                 const index = e.get('index');
                 searchControl.getResult(index).then((res) => {
                     const coords = res.geometry.getCoordinates();
                     const name = res.properties.get('name');
+
+                    if (!fromCity) {
+                        fromCity = { coords, name };
+                        document.getElementById('from-city').value = name;
+                    } else if (!toCity) {
+                        toCity = { coords, name };
+                        document.getElementById('to-city').value = name;
+                    }
+
+                    // Если оба города выбраны, активируем кнопку
+                    if (fromCity && toCity) {
+                        document.getElementById('done-button').disabled = false;
+                    }
+                });
+            });
+
+            // Обработчик клика по карте для выбора города
+            myMap.events.add('click', function (e) {
+                const coords = e.get('coords');
+                const name = 'Неизвестный город';  // Место, которое будет выбрано
+                const geoCoder = ymaps.geocode(coords);
+                geoCoder.then((res) => {
+                    const firstGeoObject = res.geoObjects.get(0);
+                    if (firstGeoObject) {
+                        name = firstGeoObject.getAddressLine();
+                    }
 
                     if (!fromCity) {
                         fromCity = { coords, name };
