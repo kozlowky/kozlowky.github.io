@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,49 +7,52 @@
     <title>Test Telegram WebApps API</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script> <!--Подключаем скрипт от телеграм-->
     <script src="https://api-maps.yandex.ru/2.1/?apikey=98d71c59-85f2-4aa9-b291-db2b229ba3bc&lang=ru_RU" type="text/javascript"></script> <!--Подключаем Яндекс карту-->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> <!--Подключаем Bootstrap-->
 
     <style>
         body {
             color: var(--tg-theme-text-color);
             background: var(--tg-theme-bg-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             font-size: 18px;
+            margin: 0;
+            height: 100vh;
         }
-        .hint {
-            color: var(--tg-theme-hint-color);
-        }
-        .link {
-            color: var(--tg-theme-link-color);
-        }
-        .button {
-            background: var(--tg-theme-button-color);
-            color: var(--tg-theme-button-text-color);
-            border: none;
-            font-size: 18px;
-        }
-        .button:not(:last-child) {
-            margin-bottom: 20px
-        }
-        #map {
+
+        .map-container {
+            height: 100%; /* Делаем карту на всю высоту */
             width: 100%;
-            height: 60vh;
         }
-        #form-container {
-            margin-top: 20px;
-            text-align: center;
+
+        .form-container {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            width: 90%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-container input,
+        .form-container button {
+            width: 100%;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 
 <body>
-    <div id="map"></div> <!-- Место для карты Яндекса -->
+    <div id="map" class="map-container"></div> <!-- Место для карты Яндекса -->
     
-    <div id="form-container">
-        <input id="from-city" placeholder="Город отправки" readonly />
-        <input id="to-city" placeholder="Город доставки" readonly />
-        <button id="done-button" class="button" disabled>Отправить</button>
+    <div id="form-container" class="form-container">
+        <input id="from-city" class="form-control" placeholder="Город отправки" readonly />
+        <input id="to-city" class="form-control" placeholder="Город доставки" readonly />
+        <button id="done-button" class="btn btn-primary" disabled>Отправить</button>
+        <button id="reset-button" class="btn btn-secondary">Сбросить</button>
     </div>
 
     <script>
@@ -78,7 +81,6 @@
             myMap.controls.add(searchControl);
 
             // Обработчик выбора города на карте
-            let fromPoint, toPoint;
             searchControl.events.add('resultselect', (e) => {
                 const index = e.get('index');
                 searchControl.getResult(index).then((res) => {
@@ -123,6 +125,15 @@
             }
         });
 
+        // Добавляем обработчик для кнопки сброса
+        document.getElementById('reset-button').addEventListener('click', () => {
+            // Сбрасываем значения
+            fromCity = null;
+            toCity = null;
+            document.getElementById('from-city').value = '';
+            document.getElementById('to-city').value = '';
+            document.getElementById('done-button').disabled = true;
+        });
     </script>
 </body>
 </html>
