@@ -9,51 +9,58 @@
         body, html {
             margin: 0;
             padding: 0;
-            width: 100%;
             height: 100%;
-            display: flex;
-            flex-direction: column;
+            width: 100%;
+            overflow: hidden;
         }
         #map {
-            flex: 1;
             width: 100%;
+            height: 80%;
         }
-        #form {
+        #form-container {
+            height: 20%;
             padding: 10px;
-            background-color: #f9f9f9;
-            border-top: 1px solid #ddd;
+            box-sizing: border-box;
+            background-color: #f4f4f9;
         }
-        .form-item {
-            margin-bottom: 10px;
-        }
-        .form-item label {
-            font-weight: bold;
-        }
-        .form-item input {
-            width: calc(100% - 20px);
-            padding: 5px;
-            margin-top: 5px;
+        #form-container input {
+            width: calc(50% - 10px);
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
             box-sizing: border-box;
         }
         #done-button {
             display: block;
             width: 100%;
             padding: 10px;
-            background-color: #4CAF50;
+            margin: 5px 0;
+            font-size: 18px;
+            background-color: #4caf50;
             color: white;
-            font-size: 16px;
-            font-weight: bold;
             border: none;
             cursor: pointer;
-            border-radius: 5px;
+        }
+        #done-button:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
         }
     </style>
     <script>
         ymaps.ready(init);
 
         function init() {
-            const tg = window.Telegram.WebApp; // Telegram WebApp объект
+            const tg = window.Telegram?.WebApp;
 
+            if (!tg) {
+                alert("WebApp должен быть запущен через Telegram!");
+                return;
+            }
+
+            // Разворачиваем WebApp
+            tg.expand();
+
+            // Инициализация карты
             const myMap = new ymaps.Map("map", {
                 center: [55.76, 37.64], // Москва по умолчанию
                 zoom: 5
@@ -66,73 +73,51 @@
                     size: 'large'
                 }
             });
-
             myMap.controls.add(searchControl);
 
-            const cities = {
-                from: null,
-                to: null
-            };
+            let fromCity = null;
+            let toCity = null;
 
-            let placemark;
+            // Отображение города отправки и прибытия
+            const fromCityInput = document.getElementById('from-city');
+            const toCityInput = document.getElementById('to-city');
+            const doneButton = document.getElementById('done-button');
 
-            // Добавляем событие клика на карту
-            myMap.events.add('click', function (e) {
-                const coords = e.get('coords');
+            doneButton.disabled = true;
 
-                if (!cities.from) {
-                    cities.from = coords;
-                    document.getElementById('from-city').value = `Широта: ${coords[0].toFixed(4)}, Долгота: ${coords[1].toFixed(4)}`;
-                    addPlacemark(coords, 'Город отправки');
-                } else if (!cities.to) {
-                    cities.to = coords;
-                    document.getElementById('to-city').value = `Широта: ${coords[0].toFixed(4)}, Долгота: ${coords[1].toFixed(4)}`;
-                    addPlacemark(coords, 'Город прибытия');
-                }
+            searchControl.events.add('resultselect', (e) => {
+                const index = e.get('index');
+                searchControl.getResult(index).then((res) => {
+                    const coords = res.geometry.getCoordinates();
+                    const name = res.properties.get('name');
+
+                    if (!fromCity) {
+                        fromCity = { coords, name };
+                        fromCityInput.value = name;
+                    } else if (!toCity) {
+                        toCity = { coords, name };
+                        toCityInput.value = name;
+                        doneButton.disabled = false; // Активируем кнопку, когда оба города выбраны
+                    }
+                });
             });
 
-            // Функция для добавления метки
-            function addPlacemark(coords, hint) {
-                if (placemark) {
-                    placemark.geometry.setCoordinates(coords);
+            doneButton.addEventListener('click', () => {
+                if (fromCity && toCity) {
+                    tg.sendData(JSON.stringify({ from: fromCity, to: toCity }));
+                    tg.close();
                 } else {
-                    placemark = new ymaps.Placemark(coords, {
-                        hintContent: hint
-                    });
-                    myMap.geoObjects.add(placemark);
-                }
-            }
-
-            // Обработка кнопки "ГОТОВО"
-            document.getElementById('done-button').addEventListener('click', function () {
-                if (cities.from && cities.to) {
-                    const data = {
-                        from: cities.from,
-                        to: cities.to
-                    };
-                    tg.sendData(JSON.stringify(data)); // Отправка данных боту
-                    tg.close(); // Закрыть WebApp
-                } else {
-                    alert('Укажите оба города!');
+                    alert("Пожалуйста, выберите оба города.");
                 }
             });
-
-            // Инициализация кнопки Telegram
-            tg.expand();
         }
     </script>
 </head>
 <body>
     <div id="map"></div>
-    <div id="form">
-        <div class="form-item">
-            <label for="from-city">Город отправки:</label>
-            <input type="text" id="from-city" readonly>
-        </div>
-        <div class="form-item">
-            <label for="to-city">Город прибытия:</label>
-            <input type="text" id="to-city" readonly>
-        </div>
+    <div id="form-container">
+        <input id="from-city" placeholder="Город отправки" readonly />
+        <input id="to-city" placeholder="Город прибытия" readonly />
         <button id="done-button">ГОТОВО</button>
     </div>
 </body>
