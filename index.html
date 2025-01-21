@@ -149,6 +149,7 @@
                         name = locality.length ? locality.join(', ') : administrativeArea.join(', ');
                     }
 
+                    // Добавляем полученное название города в форму
                     if (!fromCity) {
                         fromCity = { coords, name };
                         document.getElementById('from-city').value = name;
