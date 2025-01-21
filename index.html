@@ -223,4 +223,14 @@
         });
 
         document.getElementById('clear-to-city').addEventListener('click', () => {
-           
+            toCity = null;
+            document.getElementById('to-city').value = '';
+            if (toMarker) {
+                toMarker.geometry.setCoordinates([0, 0]); // Удаляем маркер
+                toMarker = null;
+            }
+            document.getElementById('done-button').disabled = true;
+        });
+    </script>
+</body>
+</html>
