@@ -124,6 +124,8 @@
                         document.getElementById('from-city').value = name;
                         fromMarker = new ymaps.Placemark(coords, {
                             balloonContent: name
+                        }, {
+                            preset: 'islands#blueIcon' // Синий маркер для города отправки
                         });
                         myMap.geoObjects.add(fromMarker);
                     } else if (!toCity) {
@@ -131,6 +133,8 @@
                         document.getElementById('to-city').value = name;
                         toMarker = new ymaps.Placemark(coords, {
                             balloonContent: name
+                        }, {
+                            preset: 'islands#greenIcon' // Зеленый маркер для города доставки
                         });
                         myMap.geoObjects.add(toMarker);
                     }
@@ -162,6 +166,8 @@
                         document.getElementById('from-city').value = name;
                         fromMarker = new ymaps.Placemark(coords, {
                             balloonContent: name
+                        }, {
+                            preset: 'islands#blueIcon' // Синий маркер для города отправки
                         });
                         myMap.geoObjects.add(fromMarker);
                     } else if (!toCity) {
@@ -169,6 +175,8 @@
                         document.getElementById('to-city').value = name;
                         toMarker = new ymaps.Placemark(coords, {
                             balloonContent: name
+                        }, {
+                            preset: 'islands#greenIcon' // Зеленый маркер для города доставки
                         });
                         myMap.geoObjects.add(toMarker);
                     }
@@ -215,14 +223,4 @@
         });
 
         document.getElementById('clear-to-city').addEventListener('click', () => {
-            toCity = null;
-            document.getElementById('to-city').value = '';
-            if (toMarker) {
-                toMarker.geometry.setCoordinates([0, 0]); // Удаляем маркер
-                toMarker = null;
-            }
-            document.getElementById('done-button').disabled = true;
-        });
-    </script>
-</body>
-</html>
+           
