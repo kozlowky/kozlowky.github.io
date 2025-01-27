@@ -1,0 +1,51 @@
+body {
+    color: var(--tg-theme-text-color);
+    background: var(--tg-theme-bg-color);
+    font-size: 18px;
+    margin: 0;
+    height: 100vh;
+}
+
+.map-container {
+    height: 100%; /* Делаем карту на всю высоту */
+    width: 100%;
+}
+
+.form-container {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: 90%;
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.form-container input {
+    width: 100%;
+    margin-bottom: 10px;
+    padding-right: 30px; /* Добавляем место для крестика */
+}
+
+.form-container input::placeholder {
+    color: #aaa;
+}
+
+.form-container .clear-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #aaa;
+    font-size: 18px;
+}
+
+.form-container button {
+    width: 100%;
+    margin-bottom: 10px;
+}
