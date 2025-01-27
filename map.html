@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Telegram WebApps API</title>
-    <script src="https://api-maps.yandex.ru/2.1/?apikey=98d71c59-85f2-4aa9-b291-db2b229ba3bc&lang=ru_RU" type="text/javascript"></script> <!--Подключаем Яндекс карту-->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> <!--Подключаем Bootstrap-->
-
+    <title>Test WebApp - Карта</title>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=98d71c59-85f2-4aa9-b291-db2b229ba3bc&lang=en_US" type="text/javascript"></script> <!-- Подключаем Яндекс карту -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> <!-- Подключаем Bootstrap -->
     <style>
         body {
             color: var(--tg-theme-text-color);
@@ -79,9 +78,6 @@
     </div>
 
     <script>
-        // let tg = window.Telegram.WebApp; //получаем объект webapp телеграма 
-        tg.expand(); //расширяем на все окно
-
         let fromCity = null; // Для хранения города отправки
         let toCity = null; // Для хранения города доставки
         let fromMarker = null; // Маркер для города отправки
@@ -191,24 +187,14 @@
         // Обработчик клика на кнопку "Отправить"
         document.getElementById('done-button').addEventListener('click', () => {
             if (fromCity && toCity) {
-                const payload = JSON.stringify({ from: fromCity, to: toCity });
-                tg.sendData(payload);  // Отправляем данные в Telegram
-                tg.close();  // Закрыть WebApp
+                // Сохраняем данные в localStorage
+                localStorage.setItem('fromCity', fromCity.name);
+                localStorage.setItem('toCity', toCity.name);
+                window.location.href = 'index.html';  // Переходим обратно на главную страницу
             } else {
                 alert("Пожалуйста, выберите оба города.");
             }
         });
-
-        // // Слушаем событие основного действия кнопки Telegram
-        // tg.onEvent('mainButtonClicked', function () {
-        //     if (fromCity && toCity) {
-        //         const payload = JSON.stringify({ from: fromCity, to: toCity });
-        //         tg.sendData(payload); // Отправляем данные
-        //         tg.close();  // Закрытие WebApp
-        //     } else {
-        //         alert("Пожалуйста, выберите оба города.");
-        //     }
-        // });
 
         // Добавляем обработчики для крестиков (сброс значений в полях)
         document.getElementById('clear-from-city').addEventListener('click', () => {
