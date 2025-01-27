@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Карта</title>
-    <script src="https://api-maps.yandex.ru/2.1/?apikey=98d71c59-85f2-4aa9-b291-db2b229ba3bc&lang=en_US" type="text/javascript"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=98d71c59-85f2-4aa9-b291-db2b229ba3bc&lang=ru_RU" type="text/javascript"></script>
     <style>
         body {
             margin: 0;
@@ -14,7 +14,7 @@
 
         #map {
             width: 100%;
-            height: 100%;
+            height: 80%;
         }
 
         .map-controls {
@@ -25,6 +25,11 @@
             background: rgba(255, 255, 255, 0.7);
             padding: 10px;
             border-radius: 8px;
+        }
+
+        .map-controls input {
+            margin-bottom: 10px;
+            width: 100%;
         }
 
         .map-controls button {
@@ -39,6 +44,8 @@
 <body>
     <div id="map"></div>
     <div class="map-controls">
+        <input id="from-city" class="form-control" placeholder="Город отправки" readonly />
+        <input id="to-city" class="form-control" placeholder="Город доставки" readonly />
         <button id="done-button" disabled>Готово</button>
     </div>
 
@@ -52,12 +59,53 @@
 
         function init() {
             const myMap = new ymaps.Map("map", {
-                center: [55.76, 37.64], 
+                center: [55.76, 37.64], // Москва по умолчанию
                 zoom: 5,
                 controls: []
             });
 
-            // Обработчик клика по карте для выбора городов
+            // Обработчик выбора города через поиск
+            const searchControl = new ymaps.control.SearchControl({
+                options: {
+                    float: 'right',
+                    provider: 'yandex#map',
+                    size: 'large',
+                    useMapBounds: true
+                }
+            });
+            myMap.controls.add(searchControl);
+
+            searchControl.events.add('resultselect', function (e) {
+                const index = e.get('index');
+                searchControl.getResult(index).then((res) => {
+                    const coords = res.geometry.getCoordinates();
+                    const name = res.properties.get('name');
+
+                    // Если город отправки не выбран
+                    if (!fromCity) {
+                        fromCity = { coords, name };
+                        document.getElementById('from-city').value = name;
+                        if (fromMarker) myMap.geoObjects.remove(fromMarker);
+                        fromMarker = new ymaps.Placemark(coords, { balloonContent: name });
+                        myMap.geoObjects.add(fromMarker);
+                    }
+                    // Если город доставки не выбран
+                    else if (!toCity) {
+                        toCity = { coords, name };
+                        document.getElementById('to-city').value = name;
+                        if (toMarker) myMap.geoObjects.remove(toMarker);
+                        toMarker = new ymaps.Placemark(coords, { balloonContent: name });
+                        myMap.geoObjects.add(toMarker);
+                    }
+
+                    // Если оба города выбраны, активируем кнопку
+                    if (fromCity && toCity) {
+                        document.getElementById('done-button').disabled = false;
+                    }
+                });
+            });
+
+            // Обработчик клика по карте для выбора города
             myMap.events.add('click', function (e) {
                 const coords = e.get('coords');
                 const geoCoder = ymaps.geocode(coords);
@@ -70,18 +118,24 @@
                         name = locality.length ? locality.join(', ') : administrativeArea.join(', ');
                     }
 
+                    // Если город отправки не выбран
                     if (!fromCity) {
                         fromCity = { coords, name };
+                        document.getElementById('from-city').value = name;
                         if (fromMarker) myMap.geoObjects.remove(fromMarker);
                         fromMarker = new ymaps.Placemark(coords, { balloonContent: name });
                         myMap.geoObjects.add(fromMarker);
-                    } else if (!toCity) {
+                    }
+                    // Если город доставки не выбран
+                    else if (!toCity) {
                         toCity = { coords, name };
+                        document.getElementById('to-city').value = name;
                         if (toMarker) myMap.geoObjects.remove(toMarker);
                         toMarker = new ymaps.Placemark(coords, { balloonContent: name });
                         myMap.geoObjects.add(toMarker);
                     }
 
+                    // Если оба города выбраны, активируем кнопку
                     if (fromCity && toCity) {
                         document.getElementById('done-button').disabled = false;
                     }
