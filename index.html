@@ -64,7 +64,7 @@
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
-
+    
         // Загрузка данных из localStorage
         window.onload = () => {
             const fromCity = localStorage.getItem('fromCity');
@@ -75,13 +75,18 @@
             if (toCity) {
                 document.getElementById('to-city').value = toCity;
             }
+    
+            // Если оба города выбраны, активируем кнопку "Отправить"
+            if (fromCity && toCity) {
+                document.getElementById('send-button').disabled = false;
+            }
         }
-
+    
         // Открыть карту
         document.getElementById('open-map').addEventListener('click', () => {
             window.location.href = 'map.html'; // Перенаправляем на карту
         });
-
+    
         // Отправить данные
         document.getElementById('send-button').addEventListener('click', () => {
             const name = document.getElementById('name').value;
@@ -89,7 +94,7 @@
             const birthdate = document.getElementById('birthdate').value;
             const fromCity = document.getElementById('from-city').value;
             const toCity = document.getElementById('to-city').value;
-
+    
             if (name && surname && birthdate && fromCity && toCity) {
                 const payload = JSON.stringify({
                     name, surname, birthdate, fromCity, toCity
