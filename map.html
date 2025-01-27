@@ -4,57 +4,90 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Карта</title>
-    <script src="https://api-maps.yandex.ru/2.1/?apikey=98d71c59-85f2-4aa9-b291-db2b229ba3bc&lang=ru_RU" type="text/javascript"></script>
+    <title>Test Telegram WebApps API</title>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=98d71c59-85f2-4aa9-b291-db2b229ba3bc&lang=en_US" type="text/javascript"></script> <!--Подключаем Яндекс карту-->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> <!--Подключаем Bootstrap-->
+
     <style>
         body {
+            color: var(--tg-theme-text-color);
+            background: var(--tg-theme-bg-color);
+            font-size: 18px;
             margin: 0;
             height: 100vh;
         }
 
-        #map {
+        .map-container {
+            height: 100%; /* Делаем карту на всю высоту */
             width: 100%;
-            height: 80%;
         }
 
-        .map-controls {
+        .form-container {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 10;
+            width: 90%;
+            max-width: 400px;
             background: rgba(255, 255, 255, 0.7);
-            padding: 10px;
+            padding: 20px;
             border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
 
-        .map-controls input {
-            margin-bottom: 10px;
+        .form-container input {
             width: 100%;
+            margin-bottom: 10px;
+            padding-right: 30px; /* Добавляем место для крестика */
         }
 
-        .map-controls button {
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
+        .form-container input::placeholder {
+            color: #aaa;
+        }
+
+        .form-container .clear-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #aaa;
+            font-size: 18px;
+        }
+
+        .form-container button {
+            width: 100%;
+            margin-bottom: 10px;
         }
     </style>
 </head>
+
 <body>
-    <div id="map"></div>
-    <div class="map-controls">
-        <input id="from-city" class="form-control" placeholder="Город отправки" readonly />
-        <input id="to-city" class="form-control" placeholder="Город доставки" readonly />
-        <button id="done-button" disabled>Готово</button>
+    <div id="map" class="map-container"></div> <!-- Место для карты Яндекса -->
+    
+    <div id="form-container" class="form-container">
+        <div class="position-relative">
+            <input id="from-city" class="form-control" placeholder="Город отправки" readonly />
+            <span class="clear-btn" id="clear-from-city">&#10006;</span> <!-- Крестик для сброса -->
+        </div>
+        <div class="position-relative">
+            <input id="to-city" class="form-control" placeholder="Город доставки" readonly />
+            <span class="clear-btn" id="clear-to-city">&#10006;</span> <!-- Крестик для сброса -->
+        </div>
+        <button id="done-button" class="btn btn-primary" disabled>Отправить</button>
     </div>
 
     <script>
-        let fromCity = null;
-        let toCity = null;
-        let fromMarker = null;
-        let toMarker = null;
+        // let tg = window.Telegram.WebApp; //получаем объект webapp телеграма 
+        tg.expand(); //расширяем на все окно
 
+        let fromCity = null; // Для хранения города отправки
+        let toCity = null; // Для хранения города доставки
+        let fromMarker = null; // Маркер для города отправки
+        let toMarker = null; // Маркер для города доставки
+
+        // Инициализация карты
         ymaps.ready(init);
 
         function init() {
@@ -62,39 +95,46 @@
                 center: [55.76, 37.64], // Москва по умолчанию
                 zoom: 5,
                 controls: []
+            }, {
+                suppressMapOpenBlock: true,
             });
 
-            // Обработчик выбора города через поиск
+            // Центрирование поиска по текущему положению карты
             const searchControl = new ymaps.control.SearchControl({
                 options: {
                     float: 'right',
                     provider: 'yandex#map',
                     size: 'large',
-                    useMapBounds: true
+                    useMapBounds: true // Используем текущие границы карты для поиска
                 }
             });
             myMap.controls.add(searchControl);
 
-            searchControl.events.add('resultselect', function (e) {
+            // Обработчик выбора города на карте через поиск
+            searchControl.events.add('resultselect', (e) => {
                 const index = e.get('index');
                 searchControl.getResult(index).then((res) => {
                     const coords = res.geometry.getCoordinates();
                     const name = res.properties.get('name');
 
-                    // Если город отправки не выбран
+                    // Добавляем маркер на выбранное место
                     if (!fromCity) {
                         fromCity = { coords, name };
                         document.getElementById('from-city').value = name;
-                        if (fromMarker) myMap.geoObjects.remove(fromMarker);
-                        fromMarker = new ymaps.Placemark(coords, { balloonContent: name });
+                        fromMarker = new ymaps.Placemark(coords, {
+                            balloonContent: name
+                        }, {
+                            preset: 'islands#blueIcon' // Синий маркер для города отправки
+                        });
                         myMap.geoObjects.add(fromMarker);
-                    }
-                    // Если город доставки не выбран
-                    else if (!toCity) {
+                    } else if (!toCity) {
                         toCity = { coords, name };
                         document.getElementById('to-city').value = name;
-                        if (toMarker) myMap.geoObjects.remove(toMarker);
-                        toMarker = new ymaps.Placemark(coords, { balloonContent: name });
+                        toMarker = new ymaps.Placemark(coords, {
+                            balloonContent: name
+                        }, {
+                            preset: 'islands#greenIcon' // Зеленый маркер для города доставки
+                        });
                         myMap.geoObjects.add(toMarker);
                     }
 
@@ -109,29 +149,34 @@
             myMap.events.add('click', function (e) {
                 const coords = e.get('coords');
                 const geoCoder = ymaps.geocode(coords);
-                geoCoder.then(function (res) {
+                geoCoder.then((res) => {
                     const firstGeoObject = res.geoObjects.get(0);
-                    let name = 'Неизвестный город';
+                    let name = 'Неизвестный город'; // Значение по умолчанию
                     if (firstGeoObject) {
+                        // Получаем только города или административные области
                         const locality = firstGeoObject.getLocalities();
                         const administrativeArea = firstGeoObject.getAdministrativeAreas();
                         name = locality.length ? locality.join(', ') : administrativeArea.join(', ');
                     }
 
-                    // Если город отправки не выбран
+                    // Добавляем маркер на выбранное место
                     if (!fromCity) {
                         fromCity = { coords, name };
                         document.getElementById('from-city').value = name;
-                        if (fromMarker) myMap.geoObjects.remove(fromMarker);
-                        fromMarker = new ymaps.Placemark(coords, { balloonContent: name });
+                        fromMarker = new ymaps.Placemark(coords, {
+                            balloonContent: name
+                        }, {
+                            preset: 'islands#blueIcon' // Синий маркер для города отправки
+                        });
                         myMap.geoObjects.add(fromMarker);
-                    }
-                    // Если город доставки не выбран
-                    else if (!toCity) {
+                    } else if (!toCity) {
                         toCity = { coords, name };
                         document.getElementById('to-city').value = name;
-                        if (toMarker) myMap.geoObjects.remove(toMarker);
-                        toMarker = new ymaps.Placemark(coords, { balloonContent: name });
+                        toMarker = new ymaps.Placemark(coords, {
+                            balloonContent: name
+                        }, {
+                            preset: 'islands#greenIcon' // Зеленый маркер для города доставки
+                        });
                         myMap.geoObjects.add(toMarker);
                     }
 
@@ -141,18 +186,50 @@
                     }
                 });
             });
-
-            // Кнопка "Готово"
-            document.getElementById('done-button').addEventListener('click', function () {
-                if (fromCity && toCity) {
-                    localStorage.setItem('fromCity', fromCity.name);
-                    localStorage.setItem('toCity', toCity.name);
-                    window.location.href = 'index.html'; // Возвращаемся на главную страницу
-                } else {
-                    alert('Выберите оба города');
-                }
-            });
         }
+
+        // Обработчик клика на кнопку "Отправить"
+        document.getElementById('done-button').addEventListener('click', () => {
+            if (fromCity && toCity) {
+                const payload = JSON.stringify({ from: fromCity, to: toCity });
+                tg.sendData(payload);  // Отправляем данные в Telegram
+                tg.close();  // Закрыть WebApp
+            } else {
+                alert("Пожалуйста, выберите оба города.");
+            }
+        });
+
+        // // Слушаем событие основного действия кнопки Telegram
+        // tg.onEvent('mainButtonClicked', function () {
+        //     if (fromCity && toCity) {
+        //         const payload = JSON.stringify({ from: fromCity, to: toCity });
+        //         tg.sendData(payload); // Отправляем данные
+        //         tg.close();  // Закрытие WebApp
+        //     } else {
+        //         alert("Пожалуйста, выберите оба города.");
+        //     }
+        // });
+
+        // Добавляем обработчики для крестиков (сброс значений в полях)
+        document.getElementById('clear-from-city').addEventListener('click', () => {
+            fromCity = null;
+            document.getElementById('from-city').value = '';
+            if (fromMarker) {
+                fromMarker.geometry.setCoordinates([0, 0]); // Удаляем маркер
+                fromMarker = null;
+            }
+            document.getElementById('done-button').disabled = true;
+        });
+
+        document.getElementById('clear-to-city').addEventListener('click', () => {
+            toCity = null;
+            document.getElementById('to-city').value = '';
+            if (toMarker) {
+                toMarker.geometry.setCoordinates([0, 0]); // Удаляем маркер
+                toMarker = null;
+            }
+            document.getElementById('done-button').disabled = true;
+        });
     </script>
 </body>
 </html>
