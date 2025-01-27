@@ -21,6 +21,7 @@
         .map-container {
             height: 100%; /* Делаем карту на всю высоту */
             width: 100%;
+            display: none; /* Скрываем карту по умолчанию */
         }
 
         .form-container {
@@ -95,6 +96,7 @@
         let toCity = null; // Для хранения города доставки
         let fromMarker = null; // Маркер для города отправки
         let toMarker = null; // Маркер для города доставки
+        let isMapOpen = false; // Флаг для отслеживания состояния карты
 
         // Инициализация карты
         ymaps.ready(init);
@@ -199,23 +201,43 @@
 
         // Обработчик клика на кнопку "Отправить"
         document.getElementById('done-button').addEventListener('click', () => {
-            if (fromCity && toCity) {
-                const payload = JSON.stringify({ from: fromCity, to: toCity });
+            const name = document.getElementById('name').value;
+            const surname = document.getElementById('surname').value;
+            const birthdate = document.getElementById('birthdate').value;
+
+            if (fromCity && toCity && name && surname && birthdate) {
+                const payload = JSON.stringify({ 
+                    from: fromCity, 
+                    to: toCity, 
+                    name: name, 
+                    surname: surname, 
+                    birthdate: birthdate 
+                });
                 tg.sendData(payload);  // Отправляем данные в Telegram
                 tg.close();  // Закрыть WebApp
             } else {
-                alert("Пожалуйста, выберите оба города.");
+                alert("Пожалуйста, заполните все поля и выберите оба города.");
             }
         });
 
         // Слушаем событие основного действия кнопки Telegram
         tg.onEvent('mainButtonClicked', function () {
-            if (fromCity && toCity) {
-                const payload = JSON.stringify({ from: fromCity, to: toCity });
+            const name = document.getElementById('name').value;
+            const surname = document.getElementById('surname').value;
+            const birthdate = document.getElementById('birthdate').value;
+
+            if (fromCity && toCity && name && surname && birthdate) {
+                const payload = JSON.stringify({ 
+                    from: fromCity, 
+                    to: toCity, 
+                    name: name, 
+                    surname: surname, 
+                    birthdate: birthdate 
+                });
                 tg.sendData(payload); // Отправляем данные
                 tg.close();  // Закрытие WebApp
             } else {
-                alert("Пожалуйста, выберите оба города.");
+                alert("Пожалуйста, заполните все поля и выберите оба города.");
             }
         });
 
@@ -242,9 +264,17 @@
 
         // Обработчик кнопки "Открыть карту"
         document.getElementById('open-map').addEventListener('click', () => {
-            document.getElementById('map').style.height = '100vh';
-            tg.expand();
+            document.getElementById('map').style.display = 'block';  // Показываем карту
+            isMapOpen = true;
         });
+
+        // Закрываем карту, когда выбраны оба города
+        function closeMap() {
+            if (isMapOpen) {
+                document.getElementById('map').style.display = 'none';
+                isMapOpen = false;
+            }
+        }
     </script>
 </body>
 </html>
