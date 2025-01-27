@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта</title>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=98d71c59-85f2-4aa9-b291-db2b229ba3bc&lang=ru_RU" type="text/javascript"></script>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .map-controls button {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="map-controls">
+        <button id="done-button">Готово</button>
+    </div>
+
+    <script>
+        let fromCity = null;
+        let toCity = null;
+        let fromMarker = null;
+        let toMarker = null;
+
+        ymaps.ready(init);
+
+        function init() {
+            const myMap = new ymaps.Map("map", {
+                center: [55.76, 37.64], 
+                zoom: 5,
+                controls: []
+            });
+
+            // Обработчик клика по карте для выбора городов
+            myMap.events.add('click', function (e) {
+                const coords = e.get('coords');
+                const geoCoder = ymaps.geocode(coords);
+                geoCoder.then(function (res) {
+                    const firstGeoObject = res.geoObjects.get(0);
+                    let name = 'Неизвестный город';
+                    if (firstGeoObject) {
+                        const locality = firstGeoObject.getLocalities();
+                        const administrativeArea = firstGeoObject.getAdministrativeAreas();
+                        name = locality.length ? locality.join(', ') : administrativeArea.join(', ');
+                    }
+
+                    if (!fromCity) {
+                        fromCity = { coords, name };
+                        if (fromMarker) myMap.geoObjects.remove(fromMarker);
+                        fromMarker = new ymaps.Placemark(coords, { balloonContent: name });
+                        myMap.geoObjects.add(fromMarker);
+                    } else if (!toCity) {
+                        toCity = { coords, name };
+                        if (toMarker) myMap.geoObjects.remove(toMarker);
+                        toMarker = new ymaps.Placemark(coords, { balloonContent: name });
+                        myMap.geoObjects.add(toMarker);
+                    }
+
+                    if (fromCity && toCity) {
+                        document.getElementById('done-button').disabled = false;
+                    }
+                });
+            });
+
+            // Кнопка "Готово"
+            document.getElementById('done-button').addEventListener('click', function () {
+                if (fromCity && toCity) {
+                    localStorage.setItem('fromCity', fromCity.name);
+                    localStorage.setItem('toCity', toCity.name);
+                    window.location.href = 'index.html'; // Возвращаемся на главную страницу
+                } else {
+                    alert('Выберите оба города');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
