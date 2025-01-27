@@ -68,6 +68,14 @@
     <div id="map" class="map-container"></div> <!-- Место для карты Яндекса -->
     
     <div id="form-container" class="form-container">
+        <!-- Новые поля -->
+        <input id="name" class="form-control" placeholder="Имя" />
+        <input id="surname" class="form-control" placeholder="Фамилия" />
+        <input id="birthdate" class="form-control" type="date" placeholder="Дата рождения" />
+        
+        <!-- Кнопка для открытия карты -->
+        <button id="open-map" class="btn btn-secondary btn-block">Открыть карту</button>
+
         <div class="position-relative">
             <input id="from-city" class="form-control" placeholder="Город отправки" readonly />
             <span class="clear-btn" id="clear-from-city">&#10006;</span> <!-- Крестик для сброса -->
@@ -230,6 +238,12 @@
                 toMarker = null;
             }
             document.getElementById('done-button').disabled = true;
+        });
+
+        // Обработчик кнопки "Открыть карту"
+        document.getElementById('open-map').addEventListener('click', () => {
+            document.getElementById('map').style.height = '100vh';
+            tg.expand();
         });
     </script>
 </body>
